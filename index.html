@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Eco Bin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+
+    <style>
+        body{
+            font-family: Arial;
+            text-align: center;
+            background: #f2f2f2;
+        }
+        .box{
+            background: white;
+            padding: 20px;
+            width: 250px;
+            margin: 30px auto;
+            border-radius: 8px;
+        }
+        button{
+            padding: 6px 12px;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+        .green{ background: green; }
+        .blue{ background: blue; }
+        .orange{ background: orange; }
+        .red{ background: red; }
+        #msg{
+            color: green;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2 style="color:green;">Eco Friendly Trash Bin App</h2>
+
+<div id="login" class="box">
+    <input type="text" id="name" placeholder="Enter name">
+    <br><br>
+    <button class="green" onclick="login()">Login</button>
+</div>
+
+<div id="app" class="box" style="display:none;">
+    <h3>Welcome <span id="user"></span></h3>
+
+    <button class="green" onclick="addO()">Organic</button><br><br>
+    <button class="blue" onclick="addP()">Paper</button><br><br>
+    <button class="orange" onclick="addPl()">Plastic</button>
+
+    <p>
+        Organic: <span id="o">0</span><br>
+        Paper: <span id="p">0</span><br>
+        Plastic: <span id="pl">0</span>
+    </p>
+
+    <p id="msg"></p>
+
+    <button class="red" onclick="logout()">Logout</button>
+</div>
+
+<script>
+
+var o = 0;
+var p = 0;
+var pl = 0;
+
+function login(){
+    var name = document.getElementById("name").value;
+
+    if(name == ""){
+        alert("Enter your name");
+        return;
+    }
+
+    document.getElementById("user").innerHTML = name;
+    document.getElementById("login").style.display = "none";
+    document.getElementById("app").style.display = "block";
+}
+
+document.getElementById("name").addEventListener("keypress", function(e){
+    if(e.key === "Enter"){
+        login();
+    }
+});
+
+function showMsg(text){
+    document.getElementById("msg").innerHTML = text;
+    setTimeout(function(){
+        document.getElementById("msg").innerHTML = "";
+    }, 1500);
+}
+
+function logout(){
+    document.getElementById("login").style.display = "block";
+    document.getElementById("app").style.display = "none";
+
+    o = 0;
+    p = 0;
+    pl = 0;
+
+    document.getElementById("o").innerHTML = 0;
+    document.getElementById("p").innerHTML = 0;
+    document.getElementById("pl").innerHTML = 0;
+}
+
+function addO(){
+    o++;
+    document.getElementById("o").innerHTML = o;
+    showMsg("Organic added successfully!");
+}
+
+function addP(){
+    p++;
+    document.getElementById("p").innerHTML = p;
+    showMsg("Paper added successfully!");
+}
+
+function addPl(){
+    pl++;
+    document.getElementById("pl").innerHTML = pl;
+    showMsg("Plastic added successfully!");
+}
+
+if ("serviceWorker" in navigator) {
+        navigator.serviceWorker
+          .register("/service-worker.js")
+          .then(() => {
+            console.log("ayos! rehistro as service worker");
+          })
+          .catch((error) => {
+            console.log("Registration failed: ", error);
+          });
+      }
+
+</script>
+
+</body>
+</html>
