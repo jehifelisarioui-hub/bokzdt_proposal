@@ -3,140 +3,160 @@
 <head>
     <title>Eco Bin</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="manifest" href="manifest.json">
-
     <style>
-        body{
-            font-family: Arial;
-            text-align: center;
-            background: #f2f2f2;
-        }
-        .box{
-            background: white;
-            padding: 20px;
-            width: 250px;
-            margin: 30px auto;
-            border-radius: 8px;
-        }
-        button{
-            padding: 6px 12px;
-            border: none;
-            color: white;
-            cursor: pointer;
-        }
-        .green{ background: green; }
-        .blue{ background: blue; }
-        .orange{ background: orange; }
-        .red{ background: red; }
-        #msg{
-            color: green;
-            font-size: 14px;
-        }
+        body { font-family: sans-serif; text-align: center; background: #f4f4f4; padding: 20px; margin: 0; }
+        .box { background: #fff; padding: 20px; width: 320px; margin: 15px auto; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); box-sizing: border-box; }
+        button { padding: 10px; border: none; color: #fff; cursor: pointer; border-radius: 8px; margin: 4px; font-weight: bold; }
+        .g { background: #2e7d32; } .b { background: #1565c0; } .o { background: #ef6c00; }
+        .r { background: #c62828; } .s { background: #757575; } .v { background: #546e7a; }
+        input { padding: 12px; border-radius: 8px; border: 1px solid #ddd; width: 85%; margin-bottom: 10px; }
+        .cnt { text-align: left; padding: 10px 40px; }
+        .h-box { display: none; text-align: left; }
+        .item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 8px 0; font-size: 12px; }
+        .act { color: #888; cursor: pointer; margin-left: 8px; font-size: 14px; }
     </style>
 </head>
-
 <body>
 
-<h2 style="color:green;">Eco Friendly Trash Bin App</h2>
+<h2 style="color:#2e7d32;">Eco Bin Tracker</h2>
 
 <div id="login" class="box">
-    <input type="text" id="name" placeholder="Enter name">
-    <br><br>
-    <button class="green" onclick="login()">Login</button>
+    <input type="text" id="un" placeholder="Enter Name">
+    <button class="g" onclick="reg()">Start</button>
 </div>
 
-<div id="app" class="box" style="display:none;">
-    <h3>Welcome <span id="user"></span></h3>
+<div id="app" style="display:none;">
+    <div class="box">
+        <h3>User: <span id="u"></span></h3>
+        <button class="g" onclick="upd('Organic')">+ Organic</button>
+        <button class="b" onclick="upd('Paper')">+ Paper</button>
+        <button class="o" onclick="upd('Plastic')">+ Plastic</button>
 
-    <button class="green" onclick="addO()">Organic</button><br><br>
-    <button class="blue" onclick="addP()">Paper</button><br><br>
-    <button class="orange" onclick="addPl()">Plastic</button>
+        <div class="cnt">
+            <p>Organic: <strong id="v1">0</strong></p>
+            <p>Paper: <strong id="v2">0</strong></p>
+            <p>Plastic: <strong id="v3">0</strong></p>
+        </div>
 
-    <p>
-        Organic: <span id="o">0</span><br>
-        Paper: <span id="p">0</span><br>
-        Plastic: <span id="pl">0</span>
-    </p>
+        <button class="v" onclick="togH()">Show History</button>
+        <hr>
+        <button class="s" onclick="clr()">Reset Data</button>
+        <button class="r" onclick="out()">Logout</button>
+    </div>
 
-    <p id="msg"></p>
-
-    <button class="red" onclick="logout()">Logout</button>
+    <div id="hb" class="box h-box">
+        <h4 style="margin:0 0 10px 0;">Activity Log</h4>
+        <div id="hl"></div>
+    </div>
 </div>
 
 <script>
+let curU = "";
+let db = { org: 0, pap: 0, pla: 0, logs: [] };
 
-var o = 0;
-var p = 0;
-var pl = 0;
-
-function login(){
-    var name = document.getElementById("name").value;
-
-    if(name == ""){
-        alert("Enter your name");
-        return;
+function reg() {
+    let n = document.getElementById("un").value.trim().toLowerCase();
+    if (!n) return alert("Enter a name");
+    
+    curU = n;
+    localStorage.setItem("last_user", curU);
+    
+    let raw = localStorage.getItem("data_" + curU);
+    if (raw) {
+        db = JSON.parse(raw);
+    } else {
+        db = { org: 0, pap: 0, pla: 0, logs: [] };
     }
+    
+    run(n);
+}
 
-    document.getElementById("user").innerHTML = name;
+function run(n) {
+    document.getElementById("u").innerText = n.toUpperCase();
     document.getElementById("login").style.display = "none";
     document.getElementById("app").style.display = "block";
+    render();
 }
 
-document.getElementById("name").addEventListener("keypress", function(e){
-    if(e.key === "Enter"){
-        login();
+function upd(k) {
+    if(k === 'Organic') db.org++;
+    if(k === 'Paper') db.pap++;
+    if(k === 'Plastic') db.pla++;
+    
+    let t = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    db.logs.unshift({ id: Date.now(), txt: `${t}: Added ${k}` });
+    save();
+    render();
+}
+
+function editH(id) {
+    let entry = db.logs.find(l => l.id === id);
+    let newTxt = prompt("Edit log:", entry.txt);
+    if (newTxt) {
+        entry.txt = newTxt;
+        save();
+        render();
     }
-});
-
-function showMsg(text){
-    document.getElementById("msg").innerHTML = text;
-    setTimeout(function(){
-        document.getElementById("msg").innerHTML = "";
-    }, 1500);
 }
 
-function logout(){
-    document.getElementById("login").style.display = "block";
-    document.getElementById("app").style.display = "none";
-
-    o = 0;
-    p = 0;
-    pl = 0;
-
-    document.getElementById("o").innerHTML = 0;
-    document.getElementById("p").innerHTML = 0;
-    document.getElementById("pl").innerHTML = 0;
+function delH(id) {
+    if(confirm("Remove this entry?")) {
+        db.logs = db.logs.filter(l => l.id !== id);
+        save();
+        render();
+    }
 }
 
-function addO(){
-    o++;
-    document.getElementById("o").innerHTML = o;
-    showMsg("Organic added successfully!");
+function save() {
+
+    localStorage.setItem("data_" + curU, JSON.stringify(db));
 }
 
-function addP(){
-    p++;
-    document.getElementById("p").innerHTML = p;
-    showMsg("Paper added successfully!");
+function render() {
+    document.getElementById("v1").innerText = db.org;
+    document.getElementById("v2").innerText = db.pap;
+    document.getElementById("v3").innerText = db.pla;
+    
+    let h = db.logs.map(l => `
+        <div class="item">
+            <span>${l.txt}</span>
+            <span>
+                <span class="act" onclick="editH(${l.id})">✎</span>
+                <span class="act" onclick="delH(${l.id})">×</span>
+            </span>
+        </div>
+    `).join("");
+    document.getElementById("hl").innerHTML = h || "No activity";
 }
 
-function addPl(){
-    pl++;
-    document.getElementById("pl").innerHTML = pl;
-    showMsg("Plastic added successfully!");
+function togH() {
+    let e = document.getElementById("hb");
+    let b = document.querySelector(".v");
+    let isVis = e.style.display === "block";
+    e.style.display = isVis ? "none" : "block";
+    b.innerText = isVis ? "Show History" : "Hide History";
 }
 
-if ("serviceWorker" in navigator) {
-        navigator.serviceWorker
-          .register("/service-worker.js")
-          .then(() => {
-            console.log("ayos! rehistro as service worker");
-          })
-          .catch((error) => {
-            console.log("Registration failed: ", error);
-          });
-      }
+function clr() {
+    if(confirm("Clear everything for " + curU + "?")) {
+        db = { org: 0, pap: 0, pla: 0, logs: [] };
+        save();
+        render();
+    }
+}
 
+function out() {
+    localStorage.removeItem("last_user");
+    location.reload();
+}
+
+window.onload = () => {
+    let saved = localStorage.getItem("last_user");
+    if (saved) {
+        document.getElementById("un").value = saved;
+        reg();
+    }
+};
 </script>
 
 </body>
